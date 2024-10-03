@@ -1,0 +1,46 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+    networks:
+      - services-network
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:13
+    container_name: postgres_user_post
+    restart: always
+    environment:
+      POSTGRES_USER: cPZKdNerJD
+      POSTGRES_PASSWORD: XMhRNy6m78
+      POSTGRES_DB: UserPostdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - services-network
+
+  redis:
+    image: redis:alpine
+    container_name: redis_user_post
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - services-network
+
+networks:
+  services-network:
+    driver: bridge
+
+volumes:
+  db_data:
