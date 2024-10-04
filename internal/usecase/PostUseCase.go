@@ -116,5 +116,12 @@ func (p *postUsecase) CreateMultiplePosts(multiCreatePost entity.MultiCreatePost
 		})
 	}
 
-	return p.repo.CreatePosts(posts)
+	err := p.repo.CreatePosts(posts)
+	if err != nil {
+		return err
+	}
+
+	p.cache.Delete("posts")
+
+	return nil
 }
