@@ -49,3 +49,6 @@ Explain how to use the project and provide examples.
 - Documention Swagger   = http://localhost:3000/swagger 
 - Postgree Database     = localhost:5432
 - Redis Cache           = localhost:6379
+
+# alasan menggunakan clean architecture design pattern
+clean architecture mudah dibaca. Struktur yang jelas membantu untuk memahami alur aplikasi dengan cepat, sehingga memudahkan proses maintenance dan development.
