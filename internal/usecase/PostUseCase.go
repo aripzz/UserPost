@@ -5,14 +5,16 @@ import (
 	"User-Post-Backend/internal/entity"
 	"User-Post-Backend/internal/repository"
 	"encoding/json"
+	"errors"
 	"strconv"
 )
 
 type PostUsecase interface {
 	Create(post entity.CreatePost) error
+	CreateMultiplePosts(multiCreatePost entity.MultiCreatePost) error
 	GetAll() ([]entity.Post, error)
 	GetByID(id uint64) (entity.Post, error)
-	Update(post entity.Post) error
+	Update(post entity.UpdatePost) error
 	Delete(id uint64) error
 }
 
@@ -71,8 +73,17 @@ func (p *postUsecase) GetByID(id uint64) (entity.Post, error) {
 	return post, nil
 }
 
-func (p *postUsecase) Update(post entity.Post) error {
-	err := p.repo.Update(post)
+func (p *postUsecase) Update(post entity.UpdatePost) error {
+	existingPost, err := p.repo.GetByID(post.ID)
+	if err != nil {
+		return err
+	}
+
+	if existingPost.ID == 0 {
+		return errors.New("not found")
+	}
+
+	err = p.repo.Update(post)
 	if err != nil {
 		return err
 	}
@@ -92,4 +103,18 @@ func (p *postUsecase) Delete(id uint64) error {
 	p.cache.Delete("post:" + strconv.Itoa(int(id)))
 	p.cache.Delete("posts")
 	return nil
+}
+
+func (p *postUsecase) CreateMultiplePosts(multiCreatePost entity.MultiCreatePost) error {
+	var posts []entity.Post
+
+	for _, p := range multiCreatePost.Posts {
+		posts = append(posts, entity.Post{
+			Title:   p.Title,
+			Content: p.Content,
+			UserID:  multiCreatePost.UserID,
+		})
+	}
+
+	return p.repo.CreatePosts(posts)
 }

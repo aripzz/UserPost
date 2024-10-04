@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"User-Post-Backend/infra/logger"
+	"User-Post-Backend/internal/constant"
 	"User-Post-Backend/internal/helpers"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,12 +24,19 @@ func ErrorHandlerMiddleware(c *fiber.Ctx) error {
 }
 
 func HandleError(c *fiber.Ctx, err error) error {
-	if strings.Contains(err.Error(), "violates foreign key constraint") {
+	if strings.Contains(err.Error(), constant.ErrForeignKey) {
 		logger.Errorln(err)
 
 		return c.Status(fiber.StatusBadRequest).JSON(&helpers.StandardResponse{
 			Status:  fiber.StatusBadRequest,
 			Message: "Terjadi kesalahan data tidak sesuai (foreign key). Silakan periksa data yang Anda masukkan.",
+		})
+	}
+	if strings.Contains(err.Error(), constant.ErrRecordNotFound) {
+		logger.Errorln(err)
+		return c.Status(fiber.StatusNotFound).JSON(&helpers.StandardResponse{
+			Status:  fiber.StatusNotFound,
+			Message: "Data tidak ditemukan. Silakan periksa ID yang Anda masukkan.",
 		})
 	}
 	logger.Errorln(err)

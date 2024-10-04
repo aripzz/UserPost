@@ -40,7 +40,7 @@ func NewUserHandler(app *fiber.App, db *gorm.DB, cache *infra.RedisClient) {
 func (h *UserHandler) GetAll(c *fiber.Ctx) error {
 	users, err := h.userUsecase.GetAll()
 	if err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return helpers.SendResponse(c, fiber.StatusOK, "successfully", users)
 }
@@ -56,11 +56,11 @@ func (h *UserHandler) GetAll(c *fiber.Ctx) error {
 func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusBadRequest, "Invalid ID")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid ID")
 	}
 	user, err := h.userUsecase.GetByID(id)
 	if err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return helpers.SendResponse(c, fiber.StatusOK, "successfully", user)
 }
@@ -76,11 +76,11 @@ func (h *UserHandler) GetByID(c *fiber.Ctx) error {
 func (h *UserHandler) Create(c *fiber.Ctx) error {
 	var user entity.CreateUser
 	if err := c.BodyParser(&user); err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusBadRequest, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	if err := h.userUsecase.Create(user); err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return helpers.SendResponse(c, fiber.StatusCreated, "successfully", nil)
 }
@@ -91,22 +91,22 @@ func (h *UserHandler) Create(c *fiber.Ctx) error {
 // @Accept  json
 // @Produce  json
 // @Param id path int true "User ID"
-// @Param user body entity.User true "User data"
+// @Param user body entity.CreateUser true "User data"
 // @Success 200 {string} string "User updated"
 // @Router /api/v1/users/{id} [put]
 func (h *UserHandler) Update(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusBadRequest, "Invalid ID")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid ID")
 	}
 
 	var user entity.User
 	if err := c.BodyParser(&user); err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusBadRequest, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 	user.ID = id
 	if err := h.userUsecase.Update(user); err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return helpers.SendResponse(c, fiber.StatusOK, "update successfully", nil)
 }
@@ -122,10 +122,10 @@ func (h *UserHandler) Update(c *fiber.Ctx) error {
 func (h *UserHandler) Delete(c *fiber.Ctx) error {
 	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusBadRequest, "Invalid ID")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid ID")
 	}
 	if err := h.userUsecase.Delete(id); err != nil {
-		return helpers.SendErrorResponse(c, fiber.StatusInternalServerError, err.Error())
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 	return helpers.SendResponse(c, fiber.StatusOK, "deleted successfully", nil)
 }

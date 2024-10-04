@@ -5,6 +5,7 @@ import (
 	"User-Post-Backend/internal/entity"
 	"User-Post-Backend/internal/repository"
 	"encoding/json"
+	"errors"
 	"strconv"
 )
 
@@ -67,7 +68,14 @@ func (u *userUsecase) GetByID(id uint64) (entity.User, error) {
 }
 
 func (u *userUsecase) Update(user entity.User) error {
-	err := u.repo.Update(user)
+	existingUser, err := u.repo.GetByID(user.ID)
+	if err != nil {
+		return err
+	}
+	if existingUser.ID == 0 {
+		return errors.New("data not found")
+	}
+	err = u.repo.Update(user)
 	if err != nil {
 		return err
 	}

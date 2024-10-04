@@ -18,6 +18,18 @@ definitions:
       name:
         type: string
     type: object
+  entity.MultiCreatePost:
+    properties:
+      posts:
+        items:
+          $ref: '#/definitions/entity.Posts'
+        type: array
+      user_id:
+        type: integer
+    required:
+    - posts
+    - user_id
+    type: object
   entity.Post:
     properties:
       content:
@@ -29,12 +41,43 @@ definitions:
       user_id:
         type: integer
     type: object
+  entity.Posts:
+    properties:
+      content:
+        type: string
+      title:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  entity.UpdatePost:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - id
+    type: object
   entity.User:
     properties:
       id:
         type: integer
       name:
         type: string
+    type: object
+  helpers.StandardResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
     type: object
 host: localhost:3000
 info:
@@ -43,6 +86,28 @@ info:
   title: UserPost API
   version: "1.0"
 paths:
+  /api/v1/multi-posts:
+    post:
+      consumes:
+      - application/json
+      description: Add a new post to the database
+      parameters:
+      - description: Post data
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/entity.MultiCreatePost'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Post created
+          schema:
+            type: string
+      summary: Create a new multi post
+      tags:
+      - posts
   /api/v1/posts:
     get:
       consumes:
@@ -120,6 +185,40 @@ paths:
           schema:
             $ref: '#/definitions/entity.Post'
       summary: Get a post by ID
+      tags:
+      - posts
+    patch:
+      consumes:
+      - application/json
+      description: Update a post's data
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post data
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UpdatePost'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Post updated successfully
+          schema:
+            $ref: '#/definitions/helpers.StandardResponse'
+        "400":
+          description: Invalid ID or request body
+          schema:
+            $ref: '#/definitions/helpers.StandardResponse'
+        "404":
+          description: Data not found
+          schema:
+            $ref: '#/definitions/helpers.StandardResponse'
+      summary: Update an existing post
       tags:
       - posts
     put:
@@ -242,7 +341,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/entity.User'
+          $ref: '#/definitions/entity.CreateUser'
       produces:
       - application/json
       responses:

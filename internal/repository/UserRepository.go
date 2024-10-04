@@ -46,9 +46,13 @@ func (r *userRepository) GetByID(id uint64) (entity.User, error) {
 }
 
 func (r *userRepository) Update(user entity.User) error {
-	return r.db.Save(&user).Error
+	return r.db.Model(&user).Where("id = ?", user.ID).Updates(user).Error
+
 }
 
 func (r *userRepository) Delete(id uint64) error {
+	if err := r.db.Where("user_id = ?", id).Delete(&entity.Post{}).Error; err != nil {
+		return err
+	}
 	return r.db.Delete(&entity.User{}, id).Error
 }

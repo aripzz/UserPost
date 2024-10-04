@@ -8,9 +8,10 @@ import (
 
 type PostRepository interface {
 	Create(post entity.CreatePost) error
+	CreatePosts(posts []entity.Post) error
 	GetAll() ([]entity.Post, error)
 	GetByID(id uint64) (entity.Post, error)
-	Update(post entity.Post) error
+	Update(post entity.UpdatePost) error
 	Delete(id uint64) error
 }
 
@@ -47,10 +48,21 @@ func (r *postRepository) GetByID(id uint64) (entity.Post, error) {
 	return post, nil
 }
 
-func (r *postRepository) Update(post entity.Post) error {
-	return r.db.Save(&post).Error
+func (r *postRepository) Update(post entity.UpdatePost) error {
+	return r.db.Model(&post).Where("id = ?", post.ID).Updates(post).Error
 }
 
 func (r *postRepository) Delete(id uint64) error {
 	return r.db.Delete(&entity.Post{}, id).Error
+}
+
+func (r *postRepository) CreatePosts(posts []entity.Post) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		for _, post := range posts {
+			if err := tx.Create(&post).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
